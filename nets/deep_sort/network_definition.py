@@ -48,6 +48,11 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
         network, "conv2_3", nonlinearity, conv_weight_init, conv_bias_init,
         conv_regularizer, increase_dim=False,
         summarize_activations=create_summaries)
+    ## 此处需要抽出一层进行处理
+    feature1 = network
+    feature_dim = feature1.get_shape().as_list()[-1]
+    print("feature1 dimensionality: ", feature_dim)
+    feature1 = slim.flatten(feature1)
 
     network = residual_net.residual_block(
         network, "conv3_1", nonlinearity, conv_weight_init, conv_bias_init,
@@ -57,6 +62,7 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
         network, "conv3_3", nonlinearity, conv_weight_init, conv_bias_init,
         conv_regularizer, increase_dim=False,
         summarize_activations=create_summaries)
+
 
     network = residual_net.residual_block(
         network, "conv4_1", nonlinearity, conv_weight_init, conv_bias_init,
@@ -68,12 +74,15 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
         summarize_activations=create_summaries)
 
     feature_dim = network.get_shape().as_list()[-1]
-    print("feature dimensionality: ", feature_dim)
+    print("feature2 dimensionality: ", feature_dim)
     network = slim.flatten(network)
+    network = tf.concat([network, feature1], 0)
+    print(tf.shape(network))
 
+    feature_dim = 128
     network = slim.dropout(network, keep_prob=0.6)
     network = slim.fully_connected(
-        network, feature_dim, activation_fn=nonlinearity,
+        network, feature_dim, activation_fn=nonlinearity,       ## feature_dim
         normalizer_fn=batch_norm_fn, weights_regularizer=fc_regularizer,
         scope="fc1", weights_initializer=fc_weight_init,
         biases_initializer=fc_bias_init)
@@ -126,7 +135,9 @@ def create_network_factory(is_training, num_classes, add_logits,
 def preprocess(image, is_training=False, input_is_bgr=False):
     if input_is_bgr:
         image = image[:, :, ::-1]  # BGR to RGB
+    ## 取平均值
     image = tf.divide(tf.cast(image, tf.float32), 255.0)
+    ## 增益
     if is_training:
         image = tf.image.random_flip_left_right(image)
     return image
