@@ -11,7 +11,7 @@ def _pdist(a, b=None):
     return -2 * tf.matmul(a, tf.transpose(b)) + \
         tf.reshape(sq_sum_a, (-1, 1)) + tf.reshape(sq_sum_b, (1, -1))
 
-
+## 正值与负值的相关距离，越大越好
 def softmargin_triplet_loss(features, labels, create_summaries=True):
     """Softmargin triplet loss.
 
@@ -50,6 +50,7 @@ def softmargin_triplet_loss(features, labels, create_summaries=True):
     negative_distance = tf.reduce_min(
         (label_mat * almost_inf) + distance_mat, axis=1)
     loss = tf.nn.softplus(positive_distance - negative_distance)
+    ## 监视作用的输出
     if create_summaries:
         fraction_invalid_pdist = tf.reduce_mean(
             tf.cast(tf.less_equal(squared_distance_mat, -eps), tf.float32))
@@ -74,7 +75,7 @@ def softmargin_triplet_loss(features, labels, create_summaries=True):
 
     return tf.reduce_mean(loss)
 
-
+## 与类平均的距离， 越小越好
 def magnet_loss(features, labels, margin=1.0, unique_labels=None):
     """Simple unimodal magnet loss.
 

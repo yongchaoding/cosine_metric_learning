@@ -287,9 +287,11 @@ class QueuedTrainer(object):
 
     Parameters
     ----------
+    ## 预处理后的图片及其相对应的标识
     enqueue_vars : List[tf.Tensor]
         A list of tensors to be enqueued; usually the labels and preprocessed
         images.
+    ## 原始图片或者图片名加上对应的标识
     input_vars : Optional[List[tf.Tensor]]
         An optional list of input tensors; usually the labels and raw (not
         preprocessed) images or filenames to the images. The list must be of the
@@ -297,8 +299,10 @@ class QueuedTrainer(object):
         correspondence, i.e., the i-th element in `enqueue_vars` is i-th
         preprocessed element in `input_vars`. If None, the input_vars are set to
         `enqueue_vars`.
+    ## 并行处理数量
     num_enqueue_threads : Optional[int]
         Number of threads used to preprocess data in parallel.
+    ## 允许最多queue的数量
     queue_capacity : Optional[int]
         Maximum number of elements in the queue; defaults to 512.
 
@@ -336,6 +340,7 @@ class QueuedTrainer(object):
 
         Returns
         -------
+        ## 队首的元素出队列
         List[tf.Tensor]
             Returns the top `batch_size` elements from the queue. There is a
             one-to-one correspondence between the `enqueue_vars` passed in to

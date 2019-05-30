@@ -9,7 +9,7 @@ import queued_trainer
 import metrics
 import losses
 
-
+## 初始化基本参数
 def create_default_argument_parser(dataset_name):
     """Create an argument parser with default arguments.
 
@@ -33,13 +33,13 @@ def create_default_argument_parser(dataset_name):
     parser.add_argument(
         "--eval_log_dir",
         help="Evaluation log directory (only used in mode 'evaluation').",
-        default="/tmp/%s_evaldir" % dataset_name)
+        default="./tmp/%s_evaldir" % dataset_name)
     parser.add_argument(
         "--number_of_steps", help="Number of train/eval steps. If None given, "
         "runs indefenitely", default=None, type=int)
     parser.add_argument(
         "--log_dir", help="Log and checkpoints directory.",
-        default="/tmp/%s_logdir" % dataset_name)
+        default="./tmp/%s_logdir" % dataset_name)
     parser.add_argument(
         "--loss_mode", help="One of 'cosine-softmax', 'magnet', 'triplet'",
         type=str, default="cosine-softmax")
@@ -54,7 +54,7 @@ def create_default_argument_parser(dataset_name):
         "created", type=str, default=None)
     return parser
 
-
+## 选择训练参数
 def to_train_kwargs(args):
     """Parse command-line training arguments.
 
@@ -77,12 +77,12 @@ def to_train_kwargs(args):
         "log_dir": args.log_dir,
         "loss_mode": args.loss_mode,
         "number_of_steps": args.number_of_steps,
-        "restore_path": args.restore_path,
+        "restore_path": args.restore_path,          ## 训练文件存储地址
         "run_id": args.run_id,
     }
     return kwargs_dict
 
-
+## 选择评估参数
 def to_eval_kwargs(args):
     """Parse command-line evaluation arguments.
 
@@ -101,7 +101,7 @@ def to_eval_kwargs(args):
     """
     kwargs_dict = {
         "eval_log_dir": args.eval_log_dir,
-        "log_dir": args.log_dir,
+        "log_dir": args.log_dir,            ## 模型文件地址，如果是增量学习，则得传递该参数进行，应该与log相同
         "loss_mode": args.loss_mode,
         "run_id": args.run_id,
     }
@@ -118,9 +118,11 @@ def train_loop(preprocess_fn, network_factory, train_x, train_y,
 
     Parameters
     ----------
+    预处理过程
     preprocess_fn : Callable[tf.Tensor] -> tf.Tensor
         A callable that applies preprocessing to a given input image tensor of
         dtype tf.uint8 and returns a floating point representation (tf.float32).
+    核心网络
     network_factory : Callable[tf.Tensor] -> (tf.Tensor, tf.Tensor)
         A callable that takes as argument a preprocessed input image of dtype
         tf.float32 and returns the feature representation as well as a logits
@@ -129,6 +131,7 @@ def train_loop(preprocess_fn, network_factory, train_x, train_y,
         A list of image filenames or a tensor of images.
     train_y : List[int] | np.ndarray
         A list or one-dimensional array of labels for the images in `train_x`.
+    每个ID的图片数量
     num_images_per_id : int
         Sample `num_images_per_id` images for each label at each training
         iteration. The number of identities sampled at each iteration is
@@ -139,16 +142,19 @@ def train_loop(preprocess_fn, network_factory, train_x, train_y,
     log_dir : str
         Used to construct the log and checkpoint directory. They are stored in
         `log_dir/run_id`.
+    图片大小
     image_shape : Tuple[int, int, int] | NoneType
         Image shape (height, width, channels) or None. If None, `train_x` must
         be an array of images such that the shape can be queries from this
         variable.
+    重载模型地址
     restore_path : Optional[str]
         If not None, resumes training from the given checkpoint file.
     exclude_from_restore : Optional[List[str]]
         An optional list of variable scopes to be used in conjunction with
         `restore_path`. If not None, variables in the given scopes are not
         restored from the checkpoint file.
+    ## test或者train下一级的目录名称
     run_id : Optional[str]
         A string that identifies the training run; used to construct the
         log and checkpoint directory `log_dir/run_id`. If None, a random
@@ -156,18 +162,22 @@ def train_loop(preprocess_fn, network_factory, train_x, train_y,
     number_of_steps : Optional[int]
         The total number of training iterations. If None, training runs
         indefenitely.
+    损失函数
     loss_mode : Optional[str]
         A string that identifies the loss function used for training; must be
         one of 'cosine-softmax', 'magnet', 'triplet'. This value defaults to
         'cosine-softmax'.
     learning_rate : Optional[float]
         Adam learning rate; defaults to 1e-3.
-    trainable_scopes : Optional[List[str]]
+    ## 训练参数部分
+    trainable_scopes : Optional[List[str]]  None的时候，全部参数进行训练
         Optional list of variable scopes. If not None, only variables within the
         given scopes are trained. Otherwise all variables are trained.
+    写tensorboard的输出
     save_summaries_secs : Optional[int]
         Save training summaries every `save_summaries_secs` seconds to the
         log directory.
+    间隔写checkout的时间
     save_interval_secs : Optional[int]
         Save checkpoints every `save_interval_secs` seconds to the log
         directory.
@@ -180,7 +190,7 @@ def train_loop(preprocess_fn, network_factory, train_x, train_y,
         image_shape = train_x.shape[1:]
     elif type(train_x) == np.ndarray:
         assert train_x.shape[1:] == image_shape
-    read_from_file = type(train_x) != np.ndarray
+    read_from_file = type(train_x) != np.ndarray    ## 这部分如何理解？
 
     trainer, train_op = create_trainer(
         preprocess_fn, network_factory, read_from_file, image_shape, batch_size,
@@ -240,7 +250,7 @@ def create_trainer(preprocess_fn, network_factory, read_from_file, image_shape,
     num_channels = image_shape[-1] if len(image_shape) == 3 else 1
 
     with tf.device("/cpu:0"):
-        label_var = tf.placeholder(tf.int64, (None,))
+        label_var = tf.placeholder(tf.int64, (None,))       ## label的值
 
         if read_from_file:
             # NOTE(nwojke): tf.image.decode_jpg handles various image types.
@@ -255,17 +265,21 @@ def create_trainer(preprocess_fn, network_factory, read_from_file, image_shape,
             image_var = tf.placeholder(tf.uint8, (None,) + image_shape)
             input_vars = [image_var, label_var]
 
+        ## image_var 图片变量 label_var 标志位变量
         enqueue_vars = [
             tf.map_fn(
                 lambda x: preprocess_fn(x, is_training=True),
                 image_var, back_prop=False, dtype=tf.float32),
             label_var]
 
+    ## 主要看一下这部分的功能（训练器）
     trainer = queued_trainer.QueuedTrainer(enqueue_vars, input_vars)
     image_var, label_var = trainer.get_input_vars(batch_size)
     tf.summary.image("images", image_var)
 
+    ## 该部分为利用生成的网络，进行图片的输入
     feature_var, logit_var = network_factory(image_var)
+    ## 特征， 逻辑， 标识
     _create_loss(feature_var, logit_var, label_var, mode=loss_mode)
 
     if trainable_scopes is None:
@@ -280,10 +294,13 @@ def create_trainer(preprocess_fn, network_factory, read_from_file, image_shape,
     global_step = tf.train.get_or_create_global_step()
 
     loss_var = tf.losses.get_total_loss()
+
+    ## 训练操作
     train_op = slim.learning.create_train_op(
         loss_var, tf.train.AdamOptimizer(learning_rate=learning_rate),
         global_step, summarize_gradients=False,
         variables_to_train=variables_to_train)
+    
     tf.summary.scalar("total_loss", loss_var)
     tf.summary.scalar("learning_rate", learning_rate)
 
@@ -608,18 +625,20 @@ def _create_encoder(preprocess_fn, network_factory, image_shape, batch_size=32,
 
     return encoder
 
-
+## 这个函数会默认加上下面两个损失函数吗？？
 def _create_softmax_loss(feature_var, logit_var, label_var):
     del feature_var  # Unused variable
+    ## 交叉熵
     cross_entropy_var = slim.losses.sparse_softmax_cross_entropy(
         logit_var, tf.cast(label_var, tf.int64))
     tf.summary.scalar("cross_entropy_loss", cross_entropy_var)
-
+    ## 精度距离
     accuracy_var = slim.metrics.accuracy(
         tf.cast(tf.argmax(logit_var, 1), tf.int64), label_var)
     tf.summary.scalar("classification accuracy", accuracy_var)
 
 
+## magnet的损失函数
 def _create_magnet_loss(feature_var, logit_var, label_var, monitor_mode=False):
     del logit_var  # Unusued variable
     magnet_loss, _, _ = losses.magnet_loss(feature_var, label_var)
@@ -627,7 +646,7 @@ def _create_magnet_loss(feature_var, logit_var, label_var, monitor_mode=False):
     if not monitor_mode:
         slim.losses.add_loss(magnet_loss)
 
-
+## triplet的损失函数
 def _create_triplet_loss(feature_var, logit_var, label_var, monitor_mode=False):
     del logit_var  # Unusued variables
     triplet_loss = losses.softmargin_triplet_loss(feature_var, label_var)
