@@ -80,6 +80,7 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
     feature_dim = network.get_shape().as_list()[-1]
     print("feature2 dimensionality: ", feature_dim)
     network = slim.flatten(network)
+
     print("Feature2 Size: ", network.get_shape().as_list())
     network = tf.concat([network, feature1], 1)
     print("Total Feature Size: ", network.get_shape().as_list())

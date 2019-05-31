@@ -5,4 +5,4 @@ python train_mars.py \
     --log_dir=./modNet/mars \
     --run_id=cosine-softmax \
     --learning_rate=1e-3
-#    --restore_path=./netOut/mars/cosine-softmax/model.ckpt-5231
+    --restore_path=./modNet/mars/cosine-softmax/model.ckpt-3116
