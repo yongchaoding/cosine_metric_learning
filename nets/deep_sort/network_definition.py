@@ -48,11 +48,15 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
         network, "conv2_3", nonlinearity, conv_weight_init, conv_bias_init,
         conv_regularizer, increase_dim=False,
         summarize_activations=create_summaries)
-    ## 此处需要抽出一层进行处理
-    feature1 = network
+    ## 此处需要抽出一层进行处理(为防止浅层特征引入太多数据，提前先进行max pool)
+    ##feature1 = network
+    feature1 = slim.max_pool2d(
+        network, [3, 3], [2, 2], scope="pool2", padding="SAME")
     feature_dim = feature1.get_shape().as_list()[-1]
     print("feature1 dimensionality: ", feature_dim)
     feature1 = slim.flatten(feature1)
+    print("Feature1 Size: ", feature1.get_shape().as_list())
+
 
     network = residual_net.residual_block(
         network, "conv3_1", nonlinearity, conv_weight_init, conv_bias_init,
@@ -76,10 +80,11 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
     feature_dim = network.get_shape().as_list()[-1]
     print("feature2 dimensionality: ", feature_dim)
     network = slim.flatten(network)
-    network = tf.concat([network, feature1], 0)
-    print(tf.shape(network))
+    print("Feature2 Size: ", network.get_shape().as_list())
+    network = tf.concat([network, feature1], 1)
+    print("Total Feature Size: ", network.get_shape().as_list())
 
-    feature_dim = 128
+    ##feature_dim = 128
     network = slim.dropout(network, keep_prob=0.6)
     network = slim.fully_connected(
         network, feature_dim, activation_fn=nonlinearity,       ## feature_dim

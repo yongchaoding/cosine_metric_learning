@@ -33,7 +33,7 @@ class Mars(object):
     def read_validation(self):
         filenames, ids, camera_indices, _ = mars.read_train_split_to_str(
             self._dataset_dir)
-        _, valid_indices = util.create_validation_split( v 
+        _, valid_indices = util.create_validation_split( 
             np.asarray(ids, np.int64), self._num_validation_y, self._seed)
 
         filenames = [filenames[i] for i in valid_indices]
