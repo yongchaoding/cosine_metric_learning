@@ -1,5 +1,5 @@
 #!/bin/bash
-KIND=mod
+KIND=modFull
 
 python train_mars.py \
     --mode=eval \

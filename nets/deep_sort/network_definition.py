@@ -50,11 +50,11 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
         summarize_activations=create_summaries)
     ## 此处需要抽出一层进行处理(为防止浅层特征引入太多数据，提前先进行max pool)
     ##feature1 = network
-    feature1 = slim.max_pool2d(
-        network, [3, 3], [2, 2], scope="pool2", padding="SAME")
-    feature_dim = feature1.get_shape().as_list()[-1]
-    print("feature1 dimensionality: ", feature_dim)
-    feature1 = slim.flatten(feature1)
+    ##feature1 = slim.max_pool2d(
+    ##    network, [3, 3], [2, 2], scope="pool2", padding="SAME")
+    ##feature_dim = feature1.get_shape().as_list()[-1]
+    ##print("feature1 dimensionality: ", feature_dim)
+    feature1 = slim.flatten(network)
     print("Feature1 Size: ", feature1.get_shape().as_list())
 
 
