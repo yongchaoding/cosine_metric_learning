@@ -1,5 +1,5 @@
 #!/bin/bash
-KIND=modFull
+KIND=mobileV2
 
 python train_mars.py \
     --mode=eval \

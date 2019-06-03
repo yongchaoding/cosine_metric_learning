@@ -6,7 +6,8 @@ import scipy.io as sio
 import train_app
 from datasets import mars
 from datasets import util
-import nets.deep_sort.network_definition as net
+#import nets.deep_sort.network_definition as net
+import nets.mobilenet.mobileV2_definition as net
 
 
 IMAGE_SHAPE = 128, 64, 3

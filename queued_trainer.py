@@ -3,6 +3,8 @@ import string
 import os
 import threading
 import numpy as np
+import datetime
+import time
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -513,6 +515,8 @@ class QueuedTrainer(object):
                 sv.start_queue_runners(session)
 
                 print("Starting evaluation of '%s'" % checkpoint_path)
+                t1 = datetime.datetime.now().microsecond
+                t3 = time.mktime(datetime.datetime.now().timetuple())
                 self._feed_generator = iterate_forever(
                     self._batch_size, *dataset)
                 self._coordinator = tf.train.Coordinator()
@@ -537,6 +541,10 @@ class QueuedTrainer(object):
                 summary_writer.add_summary(summary_str, global_step_value)
                 summary_writer.flush()
 
+                t2 = datetime.datetime.now().microsecond
+                t4 = time.mktime(datetime.datetime.now().timetuple())
+                strTime = 'funtion time use:%dms' % ((t4 - t3) * 1000 + (t2 - t1) / 1000)
+                print(strTime)
                 self._stop_all_threads(session)
                 print("Finished evaluation of '%s'" % checkpoint_path)
 

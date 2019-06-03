@@ -29,8 +29,8 @@ import functools
 
 import tensorflow as tf
 
-import conv_blocks as ops
-import mobilenet as lib
+import nets.mobilenet.conv_blocks as ops
+import nets.mobilenet.mobilenet as lib
 
 slim = tf.contrib.slim
 op = lib.op
@@ -64,19 +64,19 @@ V2_DEF = dict(
         op(ops.expanded_conv, stride=1, num_outputs=24),
         op(ops.expanded_conv, stride=2, num_outputs=32),
         op(ops.expanded_conv, stride=1, num_outputs=32),
-        op(ops.expanded_conv, stride=1, num_outputs=32),
-        op(ops.expanded_conv, stride=2, num_outputs=64),
-        op(ops.expanded_conv, stride=1, num_outputs=64),
-        op(ops.expanded_conv, stride=1, num_outputs=64),
-        op(ops.expanded_conv, stride=1, num_outputs=64),
-        op(ops.expanded_conv, stride=1, num_outputs=96),
-        op(ops.expanded_conv, stride=1, num_outputs=96),
-        op(ops.expanded_conv, stride=1, num_outputs=96),
-        op(ops.expanded_conv, stride=2, num_outputs=160),
-        op(ops.expanded_conv, stride=1, num_outputs=160),
-        op(ops.expanded_conv, stride=1, num_outputs=160),
-        op(ops.expanded_conv, stride=1, num_outputs=320),
-        op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
+        op(ops.expanded_conv, stride=1, num_outputs=32)
+        # op(ops.expanded_conv, stride=2, num_outputs=64),
+        # op(ops.expanded_conv, stride=1, num_outputs=64),
+        # op(ops.expanded_conv, stride=1, num_outputs=64),
+        # op(ops.expanded_conv, stride=1, num_outputs=64),
+        # op(ops.expanded_conv, stride=1, num_outputs=96),
+        # op(ops.expanded_conv, stride=1, num_outputs=96),
+        # op(ops.expanded_conv, stride=1, num_outputs=96),
+        # op(ops.expanded_conv, stride=2, num_outputs=160),
+        # op(ops.expanded_conv, stride=1, num_outputs=160),
+        # op(ops.expanded_conv, stride=1, num_outputs=160),
+        # op(ops.expanded_conv, stride=1, num_outputs=320),
+        # op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
     ],
 )
 # pyformat: enable
