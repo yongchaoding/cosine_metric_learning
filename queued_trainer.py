@@ -408,6 +408,9 @@ class QueuedTrainer(object):
         print("Log directory: ", log_dir)
         print("---------------------------------------")
 
+        #no_train_var = [var for var in tf.global_variables()]
+        #print(no_train_var)
+
         saver = tf.train.Saver(max_to_keep=max_checkpoints_to_keep)
         try:
             slim.learning.train(

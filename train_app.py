@@ -290,6 +290,11 @@ def create_trainer(preprocess_fn, network_factory, read_from_file, image_shape,
             variables = tf.get_collection(
                 tf.GraphKeys.TRAINABLE_VARIABLES, scope)
             variables_to_train.extend(variables)
+    for i in variables_to_train:
+        print(i.name)
+    partVariables = [var for var in variables_to_train if var.name.find("MobilenetV2") == -1]
+    for i in partVariables:
+        print("variables_to_train", i)
 
     global_step = tf.train.get_or_create_global_step()
 
@@ -299,7 +304,8 @@ def create_trainer(preprocess_fn, network_factory, read_from_file, image_shape,
     train_op = slim.learning.create_train_op(
         loss_var, tf.train.AdamOptimizer(learning_rate=learning_rate),
         global_step, summarize_gradients=False,
-        variables_to_train=variables_to_train)
+        variables_to_train=partVariables)
+#        variables_to_train=variables_to_train)
     
     tf.summary.scalar("total_loss", loss_var)
     tf.summary.scalar("learning_rate", learning_rate)
