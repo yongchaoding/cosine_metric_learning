@@ -1,5 +1,5 @@
 #!/bin/bash
-KIND=mobileV2
+KIND=mobileV2Cascade
 
 python train_mars.py \
     --mode=eval \

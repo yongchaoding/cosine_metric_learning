@@ -17,13 +17,20 @@ def create_network(images, num_classes=None, add_logits=True, reuse=None,
         return slim.batch_norm(x, scope=tf.get_variable_scope().name + "/bn")
 
     network = images
-    network,_ = base.mobilenet_base(network)
+    network, _, networkFirst = base.mobilenet_base(network)
     
+    feature1_dim = networkFirst.get_shape().as_list()[-1]
+    print("feature1 dimensionality: ", feature1_dim)
+    feature1 = slim.flatten(networkFirst)
+    print("Feature1 Size: ", network.get_shape().as_list())
+
     feature_dim = network.get_shape().as_list()[-1]
     print("feature2 dimensionality: ", feature_dim)
     network = slim.flatten(network)
-
     print("Feature2 Size: ", network.get_shape().as_list())
+
+    network = tf.concat([network, feature1], 1)
+    print("Total Feature Size: ", network.get_shape().as_list())
 
     feature_dim = 128
     network = slim.dropout(network, keep_prob=0.6)

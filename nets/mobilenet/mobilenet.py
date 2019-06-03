@@ -289,6 +289,9 @@ def mobilenet_base(  # pylint: disable=invalid-name
       end_points[end_point] = net
       scope = os.path.dirname(net.name)
       scopes[scope] = end_point
+      print(i)
+      if i == 3:
+        netFirst = net
       if final_endpoint is not None and end_point == final_endpoint:
         break
 
@@ -299,7 +302,7 @@ def mobilenet_base(  # pylint: disable=invalid-name
       bn = os.path.basename(t.name)
       if scope in scopes and t.name.endswith('output'):
         end_points[scopes[scope] + '/' + bn] = t.outputs[0]
-    return net, end_points
+    return net, end_points, netFirst
 
 
 @contextlib.contextmanager
@@ -364,9 +367,9 @@ def mobilenet(inputs,
 
   with tf.variable_scope(scope, 'Mobilenet', reuse=reuse) as scope:
     inputs = tf.identity(inputs, 'input')
-    net, end_points = mobilenet_base(inputs, scope=scope, **mobilenet_args)
+    net, end_points, netFirst = mobilenet_base(inputs, scope=scope, **mobilenet_args)
     if base_only:
-      return net, end_points
+      return net, end_points, netFirst
 
     net = tf.identity(net, name='embedding')
 
